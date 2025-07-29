@@ -25,9 +25,7 @@ Este notebook consulta la API REST de GitHub para listar dinámicamente los año
 
 📌 ¿Qué hace?
 
-1. Llama a la API pública de GitHub:
-
-https://api.github.com/repos/MinCiencia/Datos-CambioClimatico/contents/output/temperatura_dmc
+1. Llama a la API pública de GitHub: https://api.github.com/repos/MinCiencia/Datos-CambioClimatico/contents/output/temperatura_dmc  
 
 2. Filtra carpetas que tengan un nombre numérico de 4 dígitos (e.g., 2020, 2021).
 
@@ -39,4 +37,6 @@ https://api.github.com/repos/MinCiencia/Datos-CambioClimatico/contents/output/te
 
 6. Si encuentra nuevos, los agrega por append como Delta Table; si no, deja todo igual.
 
-📓 [Ver notebook nb_create_table_annios](nb_create_table_annios.ipynb)
+📓 [Ver notebook nb_create_table_annios](nb_create_table_annios.ipynb)  
+
+![Notebook](images/actividad_tabla_annios.png)
