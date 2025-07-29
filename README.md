@@ -39,4 +39,4 @@ https://api.github.com/repos/MinCiencia/Datos-CambioClimatico/contents/output/te
 
 6. Si encuentra nuevos, los agrega por append como Delta Table; si no, deja todo igual.
 
-📓 [Ver notebook nb_create_table_annios.ipynb](nb_create_table_anios.ipynb)
+📓 [Ver notebook nb_create_table_annios](nb_create_table_annios.ipynb)
