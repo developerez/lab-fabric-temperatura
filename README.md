@@ -1,69 +1,18 @@
-🚀 Pipeline Completo del Laboratorio
+# 🚀 Pipeline Completo del Laboratorio
 
-1️⃣ Notebook: nb_create_table_anios
+## 1️⃣ Crear conexión HTTP en Microsoft Fabric
+*Esta conexión permite que el pipeline acceda a los archivos CSV alojados en el repositorio público de GitHub del Ministerio de Ciencia de Chile.*
 
-Tipo: Notebook (PySpark)
+### 📍 Pasos para crear la conexión
+1. Entra a Data Factory dentro de Microsoft Fabric.
+2. Ve a la sección Administrar conexiones (Manage connections).
+3. Haz clic en Nueva conexión (New connection).
+4. Selecciona el tipo de conexión HTTP.
 
-Objetivo: Detectar automáticamente años disponibles desde GitHub del Ministerio de Ciencia de Chile.
+5.Configura los siguientes parámetros:
+Direccion url: https://raw.githubusercontent.com/MinCiencia/Datos-CambioClimatico
+Nombre de la conexion: http_conexion_github
+Tipo de autenticación: anónima.
+Nivel de privacidad público
+![Conexión HTPP](images/conexion_htpp.png)
 
-Salida: Tabla Delta tabla_anios con columna anio.
-
-Técnicas: PySpark, input_file_name(), regex.
-
-2️⃣ Lookup: array_annios
-
-Tipo: Actividad de búsqueda
-
-Objetivo: Convertir la tabla tabla_anios en arreglo para iteración.
-
-Salida: Array de años: [2020, 2021, 2022, 2023, ...]
-
-Consulta: SELECT anio FROM tabla_anios
-
-3️⃣ ForEach: ciclo_copia
-
-Tipo: Ciclo dinámico
-
-Objetivo: Ejecutar dinámicamente copiado de archivos CSV por año.
-
-Parámetros: @activity('array_annios').output.value
-
-🔄 Actividad interna: copiar_ficheros_github
-
-Tipo: Copy Data
-
-Origen: HTTP
-
-URL: relativa, por año, e.g.: /output/temperatura_dmc/{anio}/*.csv
-
-Método HTTP: GET
-
-Configuración conexión HTTP: autenticación anónima
-
-Destino: Data Lake Microsoft Fabric
-
-Carpeta destino: /temperatura_dmc/{anio}
-
-4️⃣ Notebook: nb_mover_csv
-
-Tipo: Notebook (PySpark)
-
-Objetivo: Mover archivos CSV descargados por año a carpeta plana.
-
-Origen: /temperatura_dmc/{anio}
-
-Destino: /temperatura_dmc_flat
-
-5️⃣ Notebook: nb_crear_tabla_temp_dmc
-
-Tipo: Notebook (PySpark)
-
-Objetivo: Crear tabla Delta enriquecida con columna anio.
-
-Origen: Carpeta plana /temperatura_dmc_flat
-
-Destino: Tabla Delta analítica temperatura_dmc
-
-📌 Imagen asociada:
-
-![Pipeline Completo](images/pipeline_completo.png)
