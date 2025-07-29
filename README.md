@@ -9,10 +9,10 @@
 3. Haz clic en Nueva conexión (New connection).
 4. Selecciona el tipo de conexión HTTP.
 
-5.Configura los siguientes parámetros:
-Direccion url: https://raw.githubusercontent.com/MinCiencia/Datos-CambioClimatico
-Nombre de la conexion: http_conexion_github
-Tipo de autenticación: anónima.
-Nivel de privacidad público
+5. Configura los siguientes parámetros:  
+**Direccion url:** https://raw.githubusercontent.com/MinCiencia/Datos-CambioClimatico  
+**Nombre de la conexion:** http_conexion_github  
+**Tipo de autenticación:** Anónima.  
+**Nivel de privacidad:** Público  
 ![Conexión HTPP](images/conexion_htpp.png)
 
