@@ -1,42 +1,34 @@
-# 🚀 Pipeline Completo del Laboratorio
+## 🔁 Laboratorio Fabric
 
-## 1️⃣ Crear conexión HTTP en Microsoft Fabric
-*Esta conexión permite que el pipeline acceda a los archivos CSV alojados en el repositorio público de GitHub del Ministerio de Ciencia de Chile.*
+Este pipeline optimiza la descarga y procesamiento de archivos CSV climáticos por año, desde el repositorio oficial del Ministerio de Ciencia de Chile. 
+Aprovecha el poder de **Spark en Microsoft Fabric** para procesar de forma paralela los archivos.
 
-### 📍 Pasos para crear la conexión
-1. Entra a Data Factory dentro de Microsoft Fabric.
-2. Ve a la sección Administrar conexiones (Manage connections).
-3. Haz clic en Nueva conexión (New connection).
-4. Selecciona el tipo de conexión HTTP.
+---
 
-5. Configura los siguientes parámetros:  
-    
-      **Direccion url:** https://raw.githubusercontent.com/MinCiencia/Datos-CambioClimatico  
-      **Nombre de la conexion:** http_conexion_github  
-      **Tipo de autenticación:** Anónima.  
-      **Nivel de privacidad:** Público  
+### ⚙️ Estructura del pipeline optimizado
 
+1. **📓 Notebook `nb_detectar_anios_pendientes`**  
+   Detecta años disponibles en GitHub y los compara contra carpetas existentes en el Lakehouse. Devuelve un array con los años nuevos pendientes por copiar.
 
-  ![Conexión HTPP](images/conexion_htpp.png)
+2. **🔁 Actividad `ForEach` (`ciclo_anios_a_copiar`)**  
+   Ejecuta **en paralelo** la copia de archivos por cada año nuevo detectado. No espera a que termine una iteración para iniciar la siguiente.
 
-## 2️⃣ Notebook: nb_create_table_anios
+3. **📥 Actividad `Copy Data` (`copy_anio_csv`)**  
+   Copia dinámicamente el archivo `año.csv` desde GitHub al directorio `Files/temperatura_dmc_raw/año/`.
 
-Este notebook consulta la API REST de GitHub para listar dinámicamente los años disponibles (carpetas) y actualizar la tabla Delta tabla_anios con los nuevos años detectados, evitando duplicados.
+4. **📓 Notebook `nb_crear_tabla_temp_dmc`**  
+   Lee todos los archivos CSV desde `temperatura_dmc_flat`, extrae el año desde la columna `time`, y registra la tabla Delta `temperatura_dmc`.
 
-📌 ¿Qué hace?
+---
 
-1. Llama a la API pública de GitHub: https://api.github.com/repos/MinCiencia/Datos-CambioClimatico/contents/output/temperatura_dmc  
+### 🧠 Punto clave: paso de argumentos desde Notebook a ForEach
 
-2. Filtra carpetas que tengan un nombre numérico de 4 dígitos (e.g., 2020, 2021).
+Se usó la instrucción oficial soportada por Fabric:
 
-3. Verifica si la tabla tabla_anios ya existe:
+```python
+from notebookutils import mssparkutils
+import json
 
-4. Si existe, lee los años actuales. Si no existe, la crea vacía con la estructura correcta.
+# Devolver arreglo plano de años
+mssparkutils.notebook.exit(json.dumps([1950, 1951, 1952]))
 
-5. Detecta los años nuevos comparando contra lo ya almacenado.
-
-6. Si encuentra nuevos, los agrega por append como Delta Table; si no, deja todo igual.
-
-📓 [Ver notebook nb_create_table_annios](nb_create_table_annios.ipynb)  
-
-![Notebook](images/actividad_tabla_annios.png)
