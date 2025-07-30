@@ -1,69 +1,45 @@
-🚀 Pipeline Completo del Laboratorio
+# 🔁 Laboratorio Fabric
 
-1️⃣ Notebook: nb_create_table_anios
+Este pipeline optimiza la descarga y procesamiento de archivos CSV climáticos por año, desde el repositorio oficial del Ministerio de Ciencia de Chile.  
+Aprovecha el poder de **Spark en Microsoft Fabric** para procesar de forma paralela los archivos.
 
-Tipo: Notebook (PySpark)
+---
 
-Objetivo: Detectar automáticamente años disponibles desde GitHub del Ministerio de Ciencia de Chile.
+### ⚙️ Estructura del pipeline optimizado
 
-Salida: Tabla Delta tabla_anios con columna anio.
+1. **📓 Notebook `nb_detectar_anios_pendientes`**  
+   Detecta años disponibles en GitHub y los compara contra carpetas existentes en el Lakehouse. Devuelve un array con los años nuevos pendientes por copiar.
 
-Técnicas: PySpark, input_file_name(), regex.
+2. **🔁 Actividad `ForEach` (`ciclo_anios_a_copiar`)**  
+   Ejecuta **en paralelo** la copia de archivos por cada año nuevo detectado. No espera a que termine una iteración para iniciar la siguiente.
 
-2️⃣ Lookup: array_annios
+   > 💡 Para que el `ForEach` reciba correctamente la salida del notebook como una colección iterable, es obligatorio:
+   >
+   > - Que el notebook devuelva un string JSON usando:
+   >
+   >   ```python
+   >   import json
+   >   from notebookutils import mssparkutils
+   >   mssparkutils.notebook.exit(json.dumps([1950, 1951, 1952]))
+   >   ```
+   >
+   > - Y que la expresión usada como `Items` en el `ForEach` sea:
+   >
+   >   ```text
+   >   @json(activity('nb_detectar_anios_pendientes').output.result.exitValue)
+   >   ```
+   >
+   > Si se omite `@json(...)` o se usa `return` en lugar de `exit()`, Fabric no podrá iterar sobre los valores, y se mostrará el error:
+   > `"The function 'length' expects its parameter to be an array or a string"`
 
-Tipo: Actividad de búsqueda
+3. **📥 Actividad `Copy Data` (`copy_anio_csv`)**  
+   Copia dinámicamente el archivo `año.csv` desde GitHub al directorio `Files/temperatura_dmc_raw/año/`.
 
-Objetivo: Convertir la tabla tabla_anios en arreglo para iteración.
+4. **📓 Notebook `nb_crear_tabla_temp_dmc`**  
+   Lee todos los archivos CSV desde `temperatura_dmc_flat`, extrae el año desde la columna `time`, y registra la tabla Delta `temperatura_dmc`.
 
-Salida: Array de años: [2020, 2021, 2022, 2023, ...]
 
-Consulta: SELECT anio FROM tabla_anios
+## 🧪 Pipeline Completo del Laboratorio
 
-3️⃣ ForEach: ciclo_copia
+![Pipeline completo](images/pipeline_completo.png)
 
-Tipo: Ciclo dinámico
-
-Objetivo: Ejecutar dinámicamente copiado de archivos CSV por año.
-
-Parámetros: @activity('array_annios').output.value
-
-🔄 Actividad interna: copiar_ficheros_github
-
-Tipo: Copy Data
-
-Origen: HTTP
-
-URL: relativa, por año, e.g.: /output/temperatura_dmc/{anio}/*.csv
-
-Método HTTP: GET
-
-Configuración conexión HTTP: autenticación anónima
-
-Destino: Data Lake Microsoft Fabric
-
-Carpeta destino: /temperatura_dmc/{anio}
-
-4️⃣ Notebook: nb_mover_csv
-
-Tipo: Notebook (PySpark)
-
-Objetivo: Mover archivos CSV descargados por año a carpeta plana.
-
-Origen: /temperatura_dmc/{anio}
-
-Destino: /temperatura_dmc_flat
-
-5️⃣ Notebook: nb_crear_tabla_temp_dmc
-
-Tipo: Notebook (PySpark)
-
-Objetivo: Crear tabla Delta enriquecida con columna anio.
-
-Origen: Carpeta plana /temperatura_dmc_flat
-
-Destino: Tabla Delta analítica temperatura_dmc
-
-📌 Imagen asociada:
-
-![Pipeline Completo](images/pipeline_completo.png)
